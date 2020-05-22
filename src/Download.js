@@ -129,7 +129,7 @@ module.exports = class Download {
   }
 
   onError() {
-    this._promise.reject(arguments);
+    this._promise.reject({ download: this, arguments });
   }
 
 }
