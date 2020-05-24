@@ -95,12 +95,13 @@ module.exports = class BulkDownload {
     item.bulkID = bulkID;
     item.args = item.args || [];
     item.opts = item.opts || {};
-    item.download = new Download(item.url, item.output, [...this._args, ...item.args], {...this._opts, ...item.opts});
+    item.download = new Download(item.url, item.output, [...this._args, ...item.args], { ...this._opts, ...item.opts });
 
     if (item.convert) item.download.toConvert(item.convert);
     item.download.download().promise
       .then(() => {
         item.finished = true;
+        this.events.emit('finish', item);
         this.next(bulkID);
       })
       .catch((...args) => {
