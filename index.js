@@ -13,4 +13,8 @@ module.exports = class DownloadUtils {
     return require('./src/Download');
   }
 
+  static get BuldDownload() {
+    return require('./src/BulkDownload');
+  }
+
 }

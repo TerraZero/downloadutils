@@ -1,3 +1,8 @@
+/**
+ * @typedef T_DownloadOptions
+ * @property {string} cwd
+ */
+
 const FS = require('fs');
 const Path = require('path');
 const YoutubeDownloader = require('youtube-dl');
@@ -7,6 +12,12 @@ const AsyncPromise = require('utils/src/AsyncPromise');
 
 module.exports = class Download {
 
+  /**
+   * @param {string} url
+   * @param {null|string} output
+   * @param {string[]} args
+   * @param {T_DownloadOptions} opts
+   */
   constructor(url, output = null, args = [], opts = {}) {
     this._url = url;
     this._output = null;
@@ -25,31 +36,65 @@ module.exports = class Download {
     this.toFile(output);
   }
 
+  /**
+   * @returns {string}
+   */
   get url() {
     return this._url;
   }
 
+  /**
+   * @returns {string[]}
+   */
   get args() {
     return this._args;
   }
 
+  /**
+   * @returns {T_DownloadOptions}
+   */
   get opts() {
     return this._opts;
   }
 
-  get cwd() {
-    return this.opts.cwd;
-  }
-
+  /**
+   * @returns {string}
+   */
   get output() {
     return this._output;
   }
 
+  /**
+   * @returns {Promise}
+   */
   get promise() {
     if (this._promise === null) {
       this._promise = new AsyncPromise();
     }
     return this._promise.promise;
+  }
+
+  /**
+   * @returns {string}
+   */
+  get target() {
+    let target = null;
+
+    if (!this._output) return target;
+    if (Path.isAbsolute(this._output)) {
+      target = this._output;
+    } else {
+      target = Path.join(this.opts.cwd, this._output);
+    }
+
+    if (this._convert !== null) {
+      const extname = Path.extname(target);
+
+      target = target.substring(0, target.length - extname.length);
+      if (extname.startsWith('.')) target += '.';
+      target += this._convert;
+    }
+    return target;
   }
 
   toConvert(extname = null) {
@@ -58,20 +103,7 @@ module.exports = class Download {
   }
 
   toFile(output = null) {
-    if (output !== null) {
-      if (Path.isAbsolute(output)) {
-        this._output = output;
-      } else {
-        this._output = Path.join(this.cwd, output);
-      }
-      if (this._convert !== null) {
-        const extname = Path.extname(this._output);
-
-        this._output = this._output.substring(0, this._output.length - extname.length);
-        if (extname.startsWith('.')) this._output += '.';
-        this._output += this._convert;
-      }
-    }
+    this._output = output;
     return this;
   }
 
@@ -111,8 +143,9 @@ module.exports = class Download {
     if (this.output === null) {
       this.toFile(info._filename);
     }
-    if (Path.extname(info._filename) === Path.extname(this.output)) {
-      this._outputstream = FS.createWriteStream(this.output);
+    const target = this.target;
+    if (Path.extname(info._filename) === Path.extname(target)) {
+      this._outputstream = FS.createWriteStream(target);
       this._outputstream.on('finish', this.onFinish.bind(this));
       this._outputstream.on('error', this.onError.bind(this));
       this._downloadstream.pipe(this._outputstream);
@@ -120,16 +153,16 @@ module.exports = class Download {
       this._converterstream = DownloadUtils.Converter(this._downloadstream);
       this._converterstream.on('end', this.onFinish.bind(this));
       this._converterstream.on('error', this.onError.bind(this));
-      this._converterstream.save(this.output);
+      this._converterstream.save(target);
     }
   }
 
   onFinish() {
-    this._promise.resolve(this);
+    if (this._promise !== null) this._promise.resolve({ download: this, arguments });
   }
 
   onError() {
-    this._promise.reject({ download: this, arguments });
+    if (this._promise !== null) this._promise.reject({ download: this, arguments });
   }
 
 }
