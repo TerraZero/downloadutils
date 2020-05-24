@@ -3,6 +3,7 @@
  * @property {string} url The url to download
  * @property {string} convert The extname target
  * @property {string} output The output file path
+ * @property {number} bulkID The id of the bulk process
  * @property {string[]} args Arguments for the download command
  * @property {import('./Download').T_DownloadOptions} opts Options for the download library
  * @property {import('./Download')} download The download object
@@ -87,10 +88,11 @@ module.exports = class BulkDownload {
     return this;
   }
 
-  async next() {
+  async next(bulkID) {
     this.onFinish();
     if (this._index === this.data.length) return;
     const item = this.data[this._index++];
+    item.bulkID = bulkID;
     item.args = item.args || [];
     item.opts = item.opts || {};
     item.download = new Download(item.url, item.output, [...this._args, ...item.args], {...this._opts, ...item.opts});
@@ -99,7 +101,7 @@ module.exports = class BulkDownload {
     item.download.download().promise
       .then(() => {
         item.finished = true;
-        this.next();
+        this.next(bulkID);
       })
       .catch((...args) => {
         this.onError(...args);
