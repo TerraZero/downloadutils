@@ -44,6 +44,13 @@ module.exports = class BulkDownload {
   }
 
   /**
+   * @returns {number}
+   */
+  get bulk() {
+    return this._bulk;
+  }
+
+  /**
    * @returns {import('events')}
    */
   get events() {
