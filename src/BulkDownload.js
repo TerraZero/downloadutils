@@ -9,7 +9,6 @@
  * @property {import('./Download')} download The download object
  * @property {boolean} finished If the download and convert is finished
  * @property {string} file The path of the local file
- * @property {null|Error} error If the stream has an error
  */
 
 const Path = require('path');
@@ -92,6 +91,7 @@ module.exports = class BulkDownload {
     this.onFinish();
     if (this._index === this.data.length) return;
     const item = this.data[this._index++];
+
     item.bulkID = bulkID;
     item.args = item.args || [];
     item.opts = item.opts || {};

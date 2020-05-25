@@ -33,6 +33,8 @@ module.exports = class Download {
     this._outputstream = null;
     this._promise = null;
 
+    this._error = null;
+
     this.toFile(output);
   }
 
@@ -95,6 +97,10 @@ module.exports = class Download {
       target += this._convert;
     }
     return target;
+  }
+
+  get error() {
+    return this._error;
   }
 
   toConvert(extname = null) {
@@ -161,7 +167,8 @@ module.exports = class Download {
     if (this._promise !== null) this._promise.resolve({ download: this, arguments });
   }
 
-  onError() {
+  onError(error) {
+    this._error = error;
     if (this._promise !== null) this._promise.reject({ download: this, arguments });
   }
 
