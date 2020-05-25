@@ -67,7 +67,7 @@ module.exports = class Download {
   }
 
   /**
-   * @returns {Promise}
+   * @returns {Promise<this>}
    */
   get promise() {
     if (this._promise === null) {
@@ -99,20 +99,49 @@ module.exports = class Download {
     return target;
   }
 
+  /**
+   * @returns {Error}
+   */
   get error() {
     return this._error;
   }
 
+  /**
+   * @returns {import('./BulkDownload').T_DownloadItem}
+   */
+  get item() {
+    return {
+      url: this.url,
+      args: this.args,
+      opts: this.opts,
+      download: this,
+      convert: this._convert,
+      target: this.target,
+      output: this.output,
+    };
+  }
+
+  /**
+   * @param {string} extname
+   * @returns {this}
+   */
   toConvert(extname = null) {
     this._convert = extname;
     return this;
   }
 
+  /**
+   * @param {string} output
+   * @returns {this}
+   */
   toFile(output = null) {
     this._output = output;
     return this;
   }
 
+  /**
+   * @returns {Promise<object>}
+   */
   getFullInfo() {
     if (this._fullinfo === null) {
       return new Promise((resolve, reject) => {
@@ -130,6 +159,11 @@ module.exports = class Download {
     }
   }
 
+  /**
+   * Only available after info trigger.
+   *
+   * @returns {number}
+   */
   getSize() {
     if (this._info) {
       return this._info.size;
@@ -137,6 +171,11 @@ module.exports = class Download {
     return null;
   }
 
+  /**
+   * Start the download process.
+   *
+   * @returns {this}
+   */
   download() {
     this._downloadstream = YoutubeDownloader(this.url, this.args, this.opts);
     this._downloadstream.on('info', this.onInfo.bind(this));
@@ -144,6 +183,11 @@ module.exports = class Download {
     return this;
   }
 
+  /**
+   * The info process.
+   *
+   * @param {object} info
+   */
   onInfo(info) {
     this._info = info;
     if (this.output === null) {
@@ -163,10 +207,16 @@ module.exports = class Download {
     }
   }
 
+  /**
+   * The finish process.
+   */
   onFinish() {
     if (this._promise !== null) this._promise.resolve({ download: this, arguments });
   }
 
+  /**
+   * The error process.
+   */
   onError(error) {
     this._error = error;
     if (this._promise !== null) this._promise.reject({ download: this, arguments });

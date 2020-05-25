@@ -8,7 +8,7 @@
  * @property {import('./Download').T_DownloadOptions} opts Options for the download library
  * @property {import('./Download')} download The download object
  * @property {boolean} finished If the download and convert is finished
- * @property {string} file The path of the local file
+ * @property {string} target The path of the local file
  */
 
 const Path = require('path');
@@ -58,7 +58,7 @@ module.exports = class BulkDownload {
   }
 
   /**
-   * @returns {Promise}
+   * @returns {Promise<object>}
    */
   get promise() {
     if (this._promise === null) {
@@ -67,11 +67,23 @@ module.exports = class BulkDownload {
     return this._promise.promise;
   }
 
+  /**
+   * The number of synchronized download operations.
+   *
+   * @param {number} number
+   * @returns {this}
+   */
   setBulk(number) {
     this._bulk = number;
     return this;
   }
 
+  /**
+   * The CWD for all files. Can be overwritten by single download item.
+   *
+   * @param {string} path
+   * @returns {this}
+   */
   setCWD(path) {
     if (!Path.isAbsolute(path)) {
       path = Path.join(process.cwd(), path);
@@ -80,6 +92,9 @@ module.exports = class BulkDownload {
     return this;
   }
 
+  /**
+   * Starts the download process.
+   */
   download() {
     for (let i = 0; i < this._bulk; i++) {
       this.next(i);
@@ -87,6 +102,11 @@ module.exports = class BulkDownload {
     return this;
   }
 
+  /**
+   * Start a new download process for defined bulk id.
+   *
+   * @param {number} bulkID
+   */
   async next(bulkID) {
     this.onFinish();
     if (this._index === this.data.length) return;
@@ -111,6 +131,9 @@ module.exports = class BulkDownload {
     this.events.emit('next', item);
   }
 
+  /**
+   * The finish process.
+   */
   onFinish() {
     for (const item of this.data) {
       if (!item.finished) return;
@@ -118,6 +141,9 @@ module.exports = class BulkDownload {
     if (this._promise !== null) this._promise.resolve({ download: this, arguments });
   }
 
+  /**
+   * The error process.
+   */
   onError() {
     if (this._promise !== null) this._promise.reject({ download: this, arguments });
   }
