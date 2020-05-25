@@ -145,7 +145,7 @@ module.exports = class BulkDownload {
    * The error process.
    */
   onError() {
-    if (this._promise !== null) this._promise.reject({ download: this, arguments });
+    this.events.emit('error', { download: this, arguments });
   }
 
 }
