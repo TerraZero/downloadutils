@@ -129,7 +129,7 @@ module.exports = class BulkDownload {
       })
       .catch((...args) => {
         item.finished = true;
-        this.onError(...args);
+        this.onError(item, args);
         this.next(bulkID);
       });
     this.events.emit('next', item);
@@ -142,14 +142,17 @@ module.exports = class BulkDownload {
     for (const item of this.data) {
       if (!item.finished) return;
     }
-    if (this._promise !== null) this._promise.resolve({ download: this, arguments });
+    if (this._promise !== null) this._promise.resolve(this);
   }
 
   /**
    * The error process.
+   *
+   * @param {T_DownloadItem} item
+   * @param {array} args
    */
-  onError() {
-    this.events.emit('error', { download: this, arguments });
+  onError(item, args) {
+    this.events.emit('error', { download: this, item, args });
   }
 
 }
