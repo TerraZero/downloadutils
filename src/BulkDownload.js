@@ -105,6 +105,7 @@ module.exports = class BulkDownload {
         this.next(bulkID);
       })
       .catch((...args) => {
+        item.finished = true;
         this.onError(...args);
       });
     this.events.emit('next', item);
