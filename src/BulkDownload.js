@@ -34,6 +34,9 @@ module.exports = class BulkDownload {
     this._events = new Events();
     this._index = 0;
     this._promise = null;
+
+    // Silence the error handler
+    this.events.on('error', () => { });
   }
 
   /**
@@ -127,6 +130,7 @@ module.exports = class BulkDownload {
       .catch((...args) => {
         item.finished = true;
         this.onError(...args);
+        this.next(bulkID);
       });
     this.events.emit('next', item);
   }
