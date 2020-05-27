@@ -121,7 +121,7 @@ module.exports = class BulkDownload {
     item.download = new Download(item.url, item.output, [...this._args, ...item.args], { ...this._opts, ...item.opts });
 
     if (item.convert) item.download.toConvert(item.convert);
-    item.download.download().promise
+    item.download.promise
       .then(() => {
         item.finished = true;
         this.events.emit('finish', item);
@@ -132,6 +132,7 @@ module.exports = class BulkDownload {
         this.onError(item, args);
         this.next(bulkID);
       });
+    item.download.download();
     this.events.emit('next', item);
   }
 

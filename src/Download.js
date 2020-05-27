@@ -1,6 +1,7 @@
 /**
  * @typedef T_DownloadOptions
  * @property {string} cwd
+ * @property {boolean} overwrite If the target file should be overwritten
  */
 
 const FS = require('fs');
@@ -82,11 +83,11 @@ module.exports = class Download {
   get target() {
     let target = null;
 
-    if (!this._output) return target;
-    if (Path.isAbsolute(this._output)) {
-      target = this._output;
+    if (!this.output) return target;
+    if (Path.isAbsolute(this.output)) {
+      target = this.output;
     } else {
-      target = Path.join(this.opts.cwd, this._output);
+      target = Path.join(this.opts.cwd, this.output);
     }
 
     if (this._convert !== null) {
@@ -177,6 +178,10 @@ module.exports = class Download {
    * @returns {this}
    */
   download() {
+    if (this.checkExists()) {
+      this.onFinish();
+      return this;
+    }
     this._downloadstream = YoutubeDownloader(this.url, this.args, this.opts);
     this._downloadstream.on('info', this.onInfo.bind(this));
     this._downloadstream.on('error', this.onError.bind(this));
@@ -193,6 +198,11 @@ module.exports = class Download {
     if (this.output === null) {
       this.toFile(info._filename);
     }
+    if (this.checkExists()) {
+      this._downloadstream.close();
+      this.onFinish();
+      return;
+    }
     const target = this.target;
     if (Path.extname(info._filename) === Path.extname(target)) {
       this._outputstream = FS.createWriteStream(target);
@@ -205,6 +215,13 @@ module.exports = class Download {
       this._converterstream.on('error', this.onError.bind(this));
       this._converterstream.save(target);
     }
+  }
+
+  checkExists() {
+    const target = this.target;
+
+    if (!this.opts.overwrite || target === null || !FS.existsSync(target)) return false;
+    return true;
   }
 
   /**
