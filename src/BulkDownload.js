@@ -54,6 +54,20 @@ module.exports = class BulkDownload {
   }
 
   /**
+   * @returns {string[]}
+   */
+  get args() {
+    return this._args;
+  }
+
+  /**
+   * @returns {import('./Download').T_DownloadOptions}
+   */
+  get opts() {
+    return this._opts;
+  }
+
+  /**
    * @returns {import('events')}
    */
   get events() {
@@ -82,6 +96,29 @@ module.exports = class BulkDownload {
   }
 
   /**
+   * Set the argument for all items.
+   *
+   * @param {string} argument
+   * @returns {this}
+   */
+  setArgument(argument) {
+    this.args.push(argument);
+    return this;
+  }
+
+  /**
+   * Set the option for all items.
+   *
+   * @param {string} option
+   * @param {any} value
+   * @returns {this}
+   */
+  setOption(option, value) {
+    this.opts[option] = value;
+    return this;
+  }
+
+  /**
    * The CWD for all files. Can be overwritten by single download item.
    *
    * @param {string} path
@@ -91,8 +128,7 @@ module.exports = class BulkDownload {
     if (!Path.isAbsolute(path)) {
       path = Path.join(process.cwd(), path);
     }
-    this._opts.cwd = path;
-    return this;
+    return this.setOption('cwd', path);
   }
 
   /**
