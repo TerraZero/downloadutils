@@ -220,7 +220,7 @@ module.exports = class Download {
   checkExists() {
     const target = this.target;
 
-    if (!this.opts.overwrite || target === null || !FS.existsSync(target)) return false;
+    if (this.opts.overwrite || target === null || !FS.existsSync(target)) return false;
     return true;
   }
 
