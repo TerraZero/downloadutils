@@ -199,7 +199,6 @@ module.exports = class Download {
       this.toFile(info._filename);
     }
     if (this.checkExists()) {
-      this._downloadstream.close();
       this.onFinish();
       return;
     }
