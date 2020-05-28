@@ -34,6 +34,7 @@ module.exports = class Download {
     this._outputstream = null;
     this._promise = null;
 
+    this._new = true;
     this._error = null;
 
     this.toFile(output);
@@ -120,6 +121,7 @@ module.exports = class Download {
       target: this.target,
       output: this.output,
       error: this.error,
+      new: this._new,
     };
   }
 
@@ -221,6 +223,7 @@ module.exports = class Download {
     const target = this.target;
 
     if (this.opts.overwrite || target === null || !FS.existsSync(target)) return false;
+    this._new = false;
     return true;
   }
 
