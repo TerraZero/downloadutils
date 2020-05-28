@@ -119,6 +119,7 @@ module.exports = class Download {
       convert: this._convert,
       target: this.target,
       output: this.output,
+      error: this.error,
     };
   }
 
